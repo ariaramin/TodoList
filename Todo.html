@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css">
+    <script src="bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+    <script src="vue/dist/vue.global.js"></script>
+</head>
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            font-family: "Arial",sans-serif;
+        }
+
+        body{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .tasks{
+            position: relative;
+            margin: 1rem 1.3rem;
+            color: #ffffff;
+            font-size: 4.5rem;
+        }
+
+        .tasks .all-tasks{
+            position: relative;
+            color: #ffffff;
+            font-size: 1.7rem;
+        }
+
+        .all-tasks::after{
+            content: 'Tasks';
+            position: absolute;
+            top: -34px;
+            right: -36px;
+            font-size: 1.5rem;
+        }
+
+        .add-circle{
+            position: absolute;
+            bottom: -25px;
+            right: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 2rem;
+            color: #ffffff;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+        }
+
+        .nav-item{
+            font-size: 1.5rem;
+        }
+
+        .nav-pills .nav-link.active, .nav-pills .show > .nav-link{
+            background: inherit;
+            color: #000000;
+            border-bottom: 1px solid #0d6efd;
+            border-radius: 0;
+        }
+
+        .nav-item{
+            position: relative;
+        }
+
+        .todo{
+            position: relative;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .todo input[type='checkbox']{
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 100%;
+            width: 50%;
+        }
+
+        .todo input[type='text']{
+            position: relative;
+            z-index: 111;
+        }
+
+        .body i{
+            margin: auto .3rem;
+            position: relative;
+        }
+
+        .checkmark::after{
+            content: '';
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 6px;
+            height: 11px;
+            border: solid #000000;
+            border-width: 0 2px 2px 0;
+        }
+
+
+    </style>
+<body>
+
+    <div class="container" id="app">
+        <div class="row justify-content-center">
+            <div class="col-4">
+                <div class="card shadow-lg">
+                    <div class="card-header position-relative bg-warning">
+                        <div class="tasks">
+                            <span>{{ DoneTodos.length }}</span>
+                            <span class="all-tasks">/ {{ Todos.length }}</span>
+                        </div>
+                        <div class="add-circle bg-danger shadow-lg" type="button" data-bs-toggle="modal" data-bs-target="#add">
+                            <i class='bx bx-plus'></i>
+                        </div>
+                        <div class="modal fade" id="add">
+                            <div class="modal-dialog modal-sm  modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Add Todo</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <label class="form-label" for="newtodo">Todo:</label>
+                                        <input type="text" class="form-control" id="newtodo" v-model="newTodo" placeholder="New Todo...">
+                                        <button class="form-control btn btn-primary mt-3" @click="AddTodo">Add</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="header">
+                            <ul class="nav nav-pills mb-3">
+                                <li class="nav-item">
+                                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#todos">
+                                        <i class='bx bx-list-ul' ></i>
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#undone">
+                                        <i class='bx bx-circle' ></i>
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#done">
+                                        <i class='bx bx-check' ></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="body">
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="todos" >
+                                    <ul class="navbar-nav" v-for="todo, index in Todos">
+                                        <li class="nav-item">
+                                            <div class="todo">
+                                                <input type="checkbox" v-model="todo.done">
+                                                <i class='bx bx-circle' :class="todo.done ? 'checkmark' : ''" ></i>
+                                                <div v-if="todo.edit">
+                                                    <input type="text" class="form-control" v-model="todo.title">
+                                                </div>
+                                                <span v-else>{{ todo.title }}</span>
+                                                <div class="position-absolute top-50 translate-middle-y end-0">
+                                                    <i class='bx bxs-trash-alt' @click="RemoveTodo(index)"></i>
+                                                    <i class='bx bxs-edit' @click="EditTodo(index)"></i>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="tab-pane fade" id="undone">
+                                    <ul class="navbar-nav" v-for="undonetodo in UndoneTodos">
+                                        <li class="nav-item">
+                                            <div class="todo">
+                                                <input type="checkbox" v-model="undonetodo.done">
+                                                <i class='bx bx-circle' :class="undonetodo.done ? 'checkmark' : ''" ></i>
+                                                <span>{{ undonetodo.title }}</span>
+                                            </div>
+                                            <hr>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="tab-pane fade" id="done">
+                                    <ul class="navbar-nav" v-for="donetodo, index in DoneTodos">
+                                        <li class="nav-item">
+                                            <div class="todo">
+                                                <input type="checkbox" v-model="donetodo.done">
+                                                <i class='bx bx-circle' :class="donetodo.done ? 'checkmark' : ''" ></i>
+                                                <span>{{ donetodo.title }}</span>
+                                            </div>
+                                            <hr>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <script>
+        const app = Vue.createApp({
+            data(){
+                return{
+                    Todos:[
+                        {
+                            title:'learn Django',
+                            done: false,
+                            edit: false
+                        },
+                        {
+                            title:'learn Vue',
+                            done: false,
+                            edit: false
+                        },
+                    ],
+                    newTodo: ''
+                }
+            },
+            computed:{
+                DoneTodos(){
+                    return this.Todos.filter(todo => todo.done)
+                },
+                UndoneTodos(){
+                    return this.Todos.filter(todo => todo.done === false)
+                }
+            },
+            methods: {
+                RemoveTodo(index){
+                    this.Todos.splice(index, 1)
+                },
+                EditTodo(index){
+                    this.Todos[index].edit = !this.Todos[index].edit
+                },
+                AddTodo(){
+                    this.Todos.push(
+                        {
+                            title: this.newTodo,
+                            done: false,
+                            edit: false
+                        })
+                }
+            },
+
+        }).mount('#app')
+    </script>
+
+
+</body>
+</html>
